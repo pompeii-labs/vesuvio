@@ -1,11 +1,4 @@
-import {
-    type JsonRpcRequest,
-    type JsonRpcResponse,
-    type JsonRpcNotification,
-    createRequest,
-    isResponse,
-    isNotification,
-} from './shared';
+import { createRequest, isResponse, isNotification } from './shared';
 
 type NotificationHandler = (params: Record<string, unknown>) => void;
 
@@ -37,7 +30,7 @@ export class DaemonConnection {
                 resolve();
             };
 
-            this.ws.onerror = (e) => {
+            this.ws.onerror = (_e) => {
                 if (!this._connected) reject(new Error(`Failed to connect to ${this.url}`));
             };
 

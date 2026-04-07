@@ -1,7 +1,6 @@
-import { execSync } from 'child_process';
 import { homedir, platform, arch } from 'os';
 import { join } from 'path';
-import { existsSync, writeFileSync, chmodSync } from 'fs';
+import { writeFileSync, chmodSync } from 'fs';
 import { VERSION, ui } from '../shared';
 
 const REPO = 'pompeii-labs/vesuvio';

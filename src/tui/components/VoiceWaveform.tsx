@@ -23,7 +23,7 @@ interface Props {
 
 export function VoiceWaveform({ level, speaking, isThinking, width }: Props) {
     const [history, setHistory] = useState<number[]>([]);
-    const [frame, setFrame] = useState(0);
+    const [_frame, setFrame] = useState(0);
 
     // Update history with current level
     useEffect(() => {

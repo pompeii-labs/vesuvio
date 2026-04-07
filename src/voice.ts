@@ -122,26 +122,28 @@ export function isRecording(): boolean {
 /**
  * Play audio buffer.
  */
-export function playAudio(audio: Buffer): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-        if (isMac) {
-            const tmpPath = join(tmpdir(), `vesuvio-tts-${Date.now()}.wav`);
-            const fs = await import('fs/promises');
-            await fs.writeFile(tmpPath, audio);
+export async function playAudio(audio: Buffer): Promise<void> {
+    if (isMac) {
+        const tmpPath = join(tmpdir(), `vesuvio-tts-${Date.now()}.wav`);
+        const fs = await import('fs/promises');
+        await fs.writeFile(tmpPath, audio);
+        await new Promise<void>((resolve, reject) => {
             const player = spawn('afplay', [tmpPath], { stdio: ['pipe', 'pipe', 'pipe'] });
-            player.on('close', async () => {
-                await fs.unlink(tmpPath).catch(() => {});
+            player.on('close', () => {
+                fs.unlink(tmpPath).catch(() => {});
                 resolve();
             });
             player.on('error', reject);
-        } else {
+        });
+    } else {
+        await new Promise<void>((resolve, reject) => {
             const player = spawn('aplay', ['-q', '-'], { stdio: ['pipe', 'pipe', 'pipe'] });
             player.stdin?.write(audio);
             player.stdin?.end();
             player.on('close', () => resolve());
             player.on('error', reject);
-        }
-    });
+        });
+    }
 }
 
 /**

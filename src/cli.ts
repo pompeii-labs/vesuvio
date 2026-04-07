@@ -73,7 +73,6 @@ program
     });
 
 program.parseAsync().catch((err) => {
-    const { ui } = require('./shared');
-    console.error(ui.error(`fatal: ${err.message}`));
+    console.error(`fatal: ${err.message}`);
     process.exit(1);
 });
