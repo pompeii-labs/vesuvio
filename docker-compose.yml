@@ -1,0 +1,30 @@
+services:
+  vesuvio:
+    image: ghcr.io/pompeii-labs/vesuvio:latest
+    container_name: vesuvio
+    ports:
+      - "7700:7700"
+    environment:
+      - LUX_HOST=lux
+      - OLLAMA_HOST=host.docker.internal
+    volumes:
+      - vesuvio-data:/root/.vesuvio
+    depends_on:
+      lux:
+        condition: service_started
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  lux:
+    image: ghcr.io/lux-db/lux
+    container_name: vesuvio-lux
+    ports:
+      - "6379:6379"
+    volumes:
+      - lux-data:/data
+    restart: unless-stopped
+
+volumes:
+  vesuvio-data:
+  lux-data:

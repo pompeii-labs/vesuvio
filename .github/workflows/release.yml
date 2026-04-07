@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install
+
+      - name: Build binaries
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          mkdir -p dist/binaries
+
+          bun build --compile --target=bun-linux-x64 src/cli.ts --outfile dist/binaries/vesuvio-linux-x64
+          bun build --compile --target=bun-linux-arm64 src/cli.ts --outfile dist/binaries/vesuvio-linux-arm64
+          bun build --compile --target=bun-darwin-x64 src/cli.ts --outfile dist/binaries/vesuvio-darwin-x64
+          bun build --compile --target=bun-darwin-arm64 src/cli.ts --outfile dist/binaries/vesuvio-darwin-arm64
+
+      - name: Checksums
+        run: |
+          cd dist/binaries
+          sha256sum vesuvio-* > checksums.txt
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/binaries/vesuvio-linux-x64
+            dist/binaries/vesuvio-linux-arm64
+            dist/binaries/vesuvio-darwin-x64
+            dist/binaries/vesuvio-darwin-arm64
+            dist/binaries/checksums.txt
+          generate_release_notes: true
+
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: |
+            ghcr.io/pompeii-labs/vesuvio:latest
+            ghcr.io/pompeii-labs/vesuvio:${{ github.ref_name }}
